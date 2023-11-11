@@ -11,7 +11,8 @@ import java.util.logging.Logger;
 
 public class MyBot extends TelegramLongPollingBot {
     Logger log = Logger.getLogger(MyBot.class.getName());
-    Notifications notifications = new Notifications(this);
+    EnvironmentCredentials credentials = new EnvironmentCredentials();
+    Notifications notifications = new Notifications(this, credentials);
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -40,10 +41,20 @@ public class MyBot extends TelegramLongPollingBot {
                 sendMessage.setText("""
                         *Список доступных комманд*:
                         1) /notificate - отправка уведомлений о процессе работ по созданию дорог на основе.
+                        2) /setenv {название стенда} - установка окружения, допустимые значения (deb, nord, 70). По умолчанию deb.
                         """);
                 break;
             case "/notificate":
                 startRoadNotifications(sendMessage);
+                break;
+            case "/setenv deb":
+                setEnvironment("deb", sendMessage);
+                break;
+            case "/setenv nord":
+                setEnvironment("nord", sendMessage);
+                break;
+            case "/setenv 70":
+                setEnvironment("70", sendMessage);
                 break;
             case "/stopNotificate":
                 stopRoadNotifications(sendMessage);
@@ -81,6 +92,15 @@ public class MyBot extends TelegramLongPollingBot {
             sendMessage.setText("Отправка уведомлений о создании дорог на основе остановлена.");
             notifications.state = JobStates.STOPPED;
         }
+    }
+
+    private void setEnvironment(String env, SendMessage sendMessage) {
+        if (notifications.state.equals(JobStates.PROGRESS)) {
+            sendMessage.setText("Нельзя менять окружение во время запущенной работы.");
+            return;
+        }
+        sendMessage.setText("Установлено окружиение: " + env);
+        credentials.setEnv(env);
     }
 
     @Override

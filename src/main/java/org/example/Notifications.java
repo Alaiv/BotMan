@@ -5,15 +5,17 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 public class Notifications {
     public JobStates state = JobStates.STALE;
     private final MyBot bot;
+    private final EnvironmentCredentials env;
 
-    public Notifications(MyBot bot) {
+    public Notifications(MyBot bot, EnvironmentCredentials env) {
         this.bot = bot;
+        this.env = env;
     }
 
     public void startSliceNotifications(SendMessage sendMessage) throws InterruptedException {
         sendMessage.setText("Отправка уведомлений запущена. Для остановки работы, введите: /stopNotificate");
         bot.executeMessage(sendMessage);
-        DataBase db = new DataBase();
+        DataBase db = new DataBase(env);
         long startTime = System.currentTimeMillis();
 
         for (; ; ) {
